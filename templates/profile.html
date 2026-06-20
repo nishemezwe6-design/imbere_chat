@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ user.username }} - Social Network</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Bouton Toggle Dark Mode -->
+<button class="dark-mode-toggle" onclick="toggleDarkMode()">
+    🌙 Mode Sombre
+</button>
+
+<script>
+// Toggle dark mode
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    
+    // Sauvegarder préférénce
+    if (document.body.classList.contains('dark-mode')) {
+        localStorage.setItem('darkMode', 'true');
+    } else {
+        localStorage.setItem('darkMode', 'false');
+    }
+    
+    // Change texte bouton
+    const btn = document.querySelector('.dark-mode-toggle');
+    if (document.body.classList.contains('dark-mode')) {
+        btn.textContent = '☀️ Mode Clair';
+    } else {
+        btn.textContent = '🌙 Mode Sombre';
+    }
+}
+
+// Charger mode sauvegardé
+document.addEventListener('DOMContentLoaded', function() {
+    const darkMode = localStorage.getItem('darkMode');
+    if (darkMode === 'true') {
+        document.body.classList.add('dark-mode');
+        document.querySelector('.dark-mode-toggle').textContent = '☀️ Mode Clair';
+    }
+});
+</script>
+    <div class="container">
+        <header>
+            <h1>{{ user.avatar }} {{ user.username }}</h1>
+            <header>
+    <h1>{{ user.avatar }} {{ user.username }}</h1>
+    <p style="color: var(--text-muted); margin-top: 10px;">
+        <strong style="color: var(--primary);">{{ followers_count }}</strong> followers
+    </p>
+</header>
+        </header>
+
+        {% if message %}
+        <div class="message">{{ message }}</div>
+        {% endif %}
+
+        <div class="profile-actions">
+            {% if current_user != user.username %}
+            {% if is_subscribed %}
+            <form action="/unsubscribe/{{ user.username }}" method="post">
+                <button type="submit" style="background: #95a5a6;">❌ Désabonner</button>
+            </form>
+            {% else %}
+            <form action="/subscribe/{{ user.username }}" method="post">
+                <button type="submit" style="background: #2ecc71;">➕ Abonner</button>
+            </form>
+            {% endif %}
+            
+            <a href="/chat/{{ user.username }}">
+                <button type="button" style="background: #3498db;">💬 Chat</button>
+            </a>
+            {% endif %}
+        </div>
+
+        <section class="posts-list">
+            <h2>📰 Posts de {{ user.username }} ({{ posts|length }})</h2>
+            {% if posts %}
+            <div class="posts">
+                {% for post in posts %}
+                <div class="post">
+                    <div class="post-header">
+                        <strong>{{ post.username }}</strong>
+                        <span class="time">{{ post.time }}</span>
+                    </div>
+                    {% if post.content %}
+                    <p>{{ post.content }}</p>
+                    {% endif %}
+                    {% if post.photo %}
+                    <img src="/uploads/photos/{{ post.photo }}" alt="Photo" style="max-width: 100%; margin: 10px 0; border-radius: 8px;">
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="empty">Pas de posts.</p>
+            {% endif %}
+        </section>
+
+        <footer>
+            <a href="/"><button type="button">← Retour</button></a>
+        </footer>
+    </div>
+</body>
+</html>

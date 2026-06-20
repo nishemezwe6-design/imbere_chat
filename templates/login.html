@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Social Network</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙 Mode Sombre</button>
+
+    <div class="container login-container">
+        <header>
+            <h1>🌐 imbere </h1>
+            <p>Connecte-toi ou crée ton compte!</p>
+        </header>
+
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+
+        {% if message %}
+        <div class="message">{{ message }}</div>
+        {% endif %}
+
+        <div class="login-register">
+            <section class="login-section">
+                <h2>🔐 Connexion</h2>
+                <form action="/login" method="post">
+                    <input type="text" name="username" placeholder="Nom d'utilisateur" required>
+                    <input type="password" name="password" placeholder="Mot de passe" required>
+                    <button type="submit">Se connecter</button>
+                </form>
+            </section>
+
+            <section class="register-section">
+                <h2>✨ Créer un compte</h2>
+                <form action="/register" method="post">
+                    <input type="text" name="username" placeholder="Nom d'utilisateur" required>
+                    <input type="password" name="password" placeholder="Mot de passe" required>
+                    <button type="submit">Créer mon compte</button>
+                </form>
+            </section>
+        </div>
+
+        <footer>
+            
+        </footer>
+    </div>
+
+    <script>
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('darkMode', 'true');
+            } else {
+                localStorage.setItem('darkMode', 'false');
+            }
+            const btn = document.querySelector('.dark-mode-toggle');
+            if (document.body.classList.contains('dark-mode')) {
+                btn.textContent = '☀️ Mode Clair';
+            } else {
+                btn.textContent = '🌙 Mode Sombre';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const darkMode = localStorage.getItem('darkMode');
+            if (darkMode === 'true') {
+                document.body.classList.add('dark-mode');
+                document.querySelector('.dark-mode-toggle').textContent = '☀️ Mode Clair';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat - Social Network</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Bouton Toggle Dark Mode -->
+<button class="dark-mode-toggle" onclick="toggleDarkMode()">
+    🌙 Mode Sombre
+</button>
+
+<script>
+// Toggle dark mode
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    
+    // Sauvegarder préférénce
+    if (document.body.classList.contains('dark-mode')) {
+        localStorage.setItem('darkMode', 'true');
+    } else {
+        localStorage.setItem('darkMode', 'false');
+    }
+    
+    // Change texte bouton
+    const btn = document.querySelector('.dark-mode-toggle');
+    if (document.body.classList.contains('dark-mode')) {
+        btn.textContent = '☀️ Mode Clair';
+    } else {
+        btn.textContent = '🌙 Mode Sombre';
+    }
+}
+
+// Charger mode sauvegardé
+document.addEventListener('DOMContentLoaded', function() {
+    const darkMode = localStorage.getItem('darkMode');
+    if (darkMode === 'true') {
+        document.body.classList.add('dark-mode');
+        document.querySelector('.dark-mode-toggle').textContent = '☀️ Mode Clair';
+    }
+});
+</script>
+    <div class="container chat-container">
+        <header>
+            <h1>💬 Chat avec {{ chat_user.avatar }} {{ chat_user.username }}</h1>
+        </header>
+
+        {% if message_sent %}
+        <div class="message">{{ message_sent }}</div>
+        {% endif %}
+
+        <div class="chat-messages">
+            {% if messages %}
+            {% for msg in messages %}
+            <div class="chat-message {% if msg.from == current_user %}own{% else %}other{% endif %}">
+                <strong>{{ msg.from }}</strong>
+                <span class="time">{{ msg.time }}</span>
+                <p>{{ msg.message }}</p>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="empty">Pas de messages.</p>
+            {% endif %}
+        </div>
+
+        <form action="/send-message/{{ chat_user.username }}" method="post" class="chat-form">
+            <input type="text" name="message" placeholder="Ton message..." required>
+            <button type="submit">Envoyer</button>
+        </form>
+
+        <footer>
+            <a href="/"><button type="button">← Retour</button></a>
+        </footer>
+    </div>
+</body>
+</html>

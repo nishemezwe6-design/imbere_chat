@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Network Pro</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙 Mode Sombre</button>
+
+    <div class="container">
+        <header>
+            <h1>🌐 imbere </h1>
+            <p>Bienvenue {{ current_user }}!</p>
+        </header>
+
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+        {% if message %}
+        <div class="message">{{ message }}</div>
+        {% endif %}
+
+        <div class="conversations-btn">
+            <a href="/conversations">
+                <button>💬 Conversations</button>
+            </a>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <button type="button" onclick="toggleNotifications()" style="background: linear-gradient(135deg, #ec4899 0%, #d946a6 100%); width: auto; padding: 10px 20px;">
+                🔔 Notifications {% if unread_count > 0 %}(<span style="background: red; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em;">{{ unread_count }}</span>){% endif %}
+            </button>
+            
+            <div id="notificationsPanel" style="display: none; margin-top: 12px; background: var(--card-bg-2); border-radius: 12px; padding: 16px; border: 1px solid var(--border);">
+                <h3 style="color: var(--text-main); margin-bottom: 12px;">📬 Notifications</h3>
+                {% if notifications %}
+                {% for notif in notifications %}
+                <div style="padding: 12px; border-bottom: 1px solid var(--border);" onclick="markNotificationRead('{{ notif.from }}', '{{ notif.type }}', '{{ notif.message }}')" {% if notif.read %}style="opacity: 0.6;"{% endif %}>
+                    {% if not notif.read %}
+                    <span style="color: red; font-size: 1.2em; margin-right: 8px;" class="notif-dot">●</span>
+                    {% endif %}
+                    <strong style="color: var(--primary);">{{ notif.from }}</strong>
+                    <span style="color: var(--text-main);">{{ notif.message }}</span>
+                    <span style="color: var(--text-muted); font-size: 0.85em;">{{ notif.time }}</span>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="empty">Pas de notifications</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <section>
+            <h2>📝 Publier un post</h2>
+            <form action="/upload-post" method="post" enctype="multipart/form-data">
+                <textarea name="content" placeholder="Qu'est-ce que tu pense?" required></textarea>
+                <input type="file" name="photo" accept="image/*">
+                <button type="submit">🚀 Publier</button>
+            </form>
+        </section>
+
+        <section>
+            <h2>📰 Posts</h2>
+            <div class="posts">
+                {% if posts %}
+                {% for post in posts %}
+                <div class="post" data-post-id="{{ post.id }}">
+                    <div class="post-header">
+                        <span class="avatar">👤</span>
+                        <strong>
+                            <a href="/profile/{{ post.username }}">{{ post.username }}</a>
+                        </strong>
+                        <span class="time">{{ post.time }}</span>
+                    </div>
+                    <p>{{ post.content }}</p>
+                    {% if post.photo %}
+                    <img src="/uploads/photos/{{ post.photo }}" alt="Photo">
+                    {% endif %}
+
+                    {% if post.username == current_user %}
+                    <div style="margin-top: 12px; display: flex; gap: 8px;">
+                        <button type="button" class="edit-btn" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); width: auto; padding: 8px 16px; font-size: 0.9em;">
+                            ✏️ Modifier
+                        </button>
+                        <button type="button" class="delete-btn" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); width: auto; padding: 8px 16px; font-size: 0.9em;">
+                            🗑️ Supprimer
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="empty">Pas de posts.</p>
+                {% endif %}
+            </div>
+        </section>
+
+        <section>
+            <h2>👥 Utilisateurs</h2>
+            <div class="users-grid">
+                {% for user in users %}
+                {% if user.username != current_user %}
+                <a href="/profile/{{ user.username }}" class="user-card">
+                    <span class="avatar">{{ user.avatar }}</span>
+                    {{ user.username }}
+                </a>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+
+        <section>
+            <h2>👤 Ton avatar</h2>
+            <form action="/upload-avatar" method="post">
+                <input type="text" name="avatar" placeholder="Emoji" value="{{ current_user_avatar }}">
+                <button type="submit">Changer</button>
+            </form>
+            <form action="/logout" method="post" style="margin-top: 12px;">
+                <button type="submit" style="background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%)">Déconnexion</button>
+            </form>
+        </section>
+
+        <footer>
+            
+        </footer>
+    </div>
+
+    <div id="editModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
+        <div style="background: var(--card-bg); padding: 24px; border-radius: 14px; max-width: 500px; width: 90%">
+            <h2 style="color: var(--primary); margin-bottom: 16px;">✏️ Modifier post</h2>
+            <form id="editForm" action="" method="post">
+                <textarea id="editContent" name="content" style="min-height: 120px;"></textarea>
+                <div style="display: flex; gap: 10px; margin-top: 12px;">
+                    <button type="submit" style="width: auto;">✓ Modifier</button>
+                    <button type="button" onclick="closeEditModal()" style="background: var(--text-muted); width: auto;">✕ Annuler</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('darkMode', 'true');
+            } else {
+                localStorage.setItem('darkMode', 'false');
+            }
+            const btn = document.querySelector('.dark-mode-toggle');
+            if (document.body.classList.contains('dark-mode')) {
+                btn.textContent = '☀️ Mode Clair';
+            } else {
+                btn.textContent = '🌙 Mode Sombre';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const darkMode = localStorage.getItem('darkMode');
+            if (darkMode === 'true') {
+                document.body.classList.add('dark-mode');
+                document.querySelector('.dark-mode-toggle').textContent = '☀️ Mode Clair';
+            }
+        });
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function toggleNotifications() {
+            const panel = document.getElementById('notificationsPanel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function markNotificationRead(fromUser, type, message) {
+            const form = document.createElement('form');
+            form.method = 'post';
+            form.action = '/mark-notification-read';
+            
+            const fromInput = document.createElement('input');
+            fromInput.type = 'hidden';
+            fromInput.name = 'from_user';
+            fromInput.value = fromUser;
+            
+            const typeInput = document.createElement('input');
+            typeInput.type = 'hidden';
+            typeInput.name = 'notif_type';
+            typeInput.value = type;
+            
+            const messageInput = document.createElement('input');
+            messageInput.type = 'hidden';
+            messageInput.name = 'message';
+            messageInput.value = message;
+            
+            form.appendChild(fromInput);
+            form.appendChild(typeInput);
+            form.appendChild(messageInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.post').forEach(function(postDiv) {
+                const editBtn = postDiv.querySelector('.edit-btn');
+                const deleteBtn = postDiv.querySelector('.delete-btn');
+                
+                if (editBtn) {
+                    editBtn.addEventListener('click', function() {
+                        const postId = postDiv.getAttribute('data-post-id');
+                        const content = postDiv.querySelector('p').textContent;
+                        document.getElementById('editModal').style.display = 'flex';
+                        document.getElementById('editContent').value = content;
+                        document.getElementById('editForm').action = '/edit-post/' + postId;
+                    });
+                }
+                
+                if (deleteBtn) {
+                    deleteBtn.addEventListener('click', function() {
+                        const postId = postDiv.getAttribute('data-post-id');
+                        if (confirm('🗑️ Supprimer ce post ?')) {
+                            const form = document.createElement('form');
+                            form.method = 'post';
+                            form.action = '/delete-post/' + postId;
+                            document.body.appendChild(form);
+                            form.submit();
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
