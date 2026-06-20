@@ -1,15 +1,16 @@
 from fastapi import FastAPI, Request, Form, HTTPException, UploadFile, File
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
 from pathlib import Path
 from datetime import datetime
 import uuid
 import os
 from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker
 
-app = FastAPI(title="imbere")
+app = FastAPI(title="Social Network Pro")
 
 templates = Jinja2Templates(directory=Path("templates"))
 app.mount("/static", StaticFiles(directory=Path("static")), name="static")
@@ -416,14 +417,11 @@ async def login(request: Request, username: str = Form(...), password: str = For
         db.close()
         return templates.TemplateResponse("login.html", {"request": request, "error": "Nom d'utilisateur ou mot de passe incorrect"})
     
-    session_id = str(uuid.uuid4())  # session_id = username (simplifié)
-    
     db.close()
     
-    response = templates.TemplateResponse("index.html", {
-        "request": request, "message": f"✓ Bienvenue {username}!"
-    })
-    response.set_cookie(key="session_id", value=username)  # Cookie = username
+    # REDIRIGER VERS / POURQUE home() CALCULE TOUTES LES VARIABLES (posts, unread_count, etc.)
+    response = RedirectResponse(url="/", status_code=303)
+    response.set_cookie(key="session_id", value=username)
     return response
 
 @app.post("/register")
