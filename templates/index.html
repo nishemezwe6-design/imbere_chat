@@ -11,7 +11,7 @@
 
     <div class="container">
         <header>
-            <h1>🌐 imbere </h1>
+            <h1>🌐 imbere</h1>
             <p>Bienvenue {{ current_user }}!</p>
         </header>
 
@@ -32,12 +32,12 @@
             <button type="button" onclick="toggleNotifications()" style="background: linear-gradient(135deg, #ec4899 0%, #d946a6 100%); width: auto; padding: 10px 20px;">
                 🔔 Notifications {% if unread_count > 0 %}(<span style="background: red; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em;">{{ unread_count }}</span>){% endif %}
             </button>
-            
+
             <div id="notificationsPanel" style="display: none; margin-top: 12px; background: var(--card-bg-2); border-radius: 12px; padding: 16px; border: 1px solid var(--border);">
                 <h3 style="color: var(--text-main); margin-bottom: 12px;">📬 Notifications</h3>
                 {% if notifications %}
                 {% for notif in notifications %}
-                <div style="padding: 12px; border-bottom: 1px solid var(--border);" onclick="markNotificationRead('{{ notif.from }}', '{{ notif.type }}', '{{ notif.message }}')" {% if notif.read %}style="opacity: 0.6;"{% endif %}>
+                <div style="padding: 12px; border-bottom: 1px solid var(--border); cursor: pointer;" onclick="markNotificationRead('{{ notif.from }}', '{{ notif.type }}', '{{ notif.message }}')" {% if notif.read %}style="opacity: 0.6;"{% endif %}>
                     {% if not notif.read %}
                     <span style="color: red; font-size: 1.2em; margin-right: 8px;" class="notif-dot">●</span>
                     {% endif %}
@@ -55,7 +55,7 @@
         <section>
             <h2>📝 Publier un post</h2>
             <form action="/upload-post" method="post" enctype="multipart/form-data">
-                <textarea name="content" placeholder="Qu'est-ce que tu pense?" required></textarea>
+                <textarea name="content" placeholder="Qu'est-ce que tu penses ?" required></textarea>
                 <input type="file" name="photo" accept="image/*">
                 <button type="submit">🚀 Publier</button>
             </form>
@@ -73,11 +73,20 @@
                             <a href="/profile/{{ post.username }}">{{ post.username }}</a>
                         </strong>
                         <span class="time">{{ post.time }}</span>
+                        <span style="margin-left: 8px; font-size: 0.8em; padding: 2px 8px; border-radius: 12px; background: #e5e7eb; color: #111827;">
+                            {{ post.label }}
+                        </span>
                     </div>
+
                     <p>{{ post.content }}</p>
+
                     {% if post.photo %}
                     <img src="/uploads/photos/{{ post.photo }}" alt="Photo">
                     {% endif %}
+
+                    <div style="margin-top: 10px;">
+                        <a href="/profile/{{ post.username }}">Voir profil</a>
+                    </div>
 
                     {% if post.username == current_user %}
                     <div style="margin-top: 12px; display: flex; gap: 8px;">
@@ -123,7 +132,6 @@
         </section>
 
         <footer>
-            
         </footer>
     </div>
 
@@ -177,22 +185,22 @@
             const form = document.createElement('form');
             form.method = 'post';
             form.action = '/mark-notification-read';
-            
+
             const fromInput = document.createElement('input');
             fromInput.type = 'hidden';
             fromInput.name = 'from_user';
             fromInput.value = fromUser;
-            
+
             const typeInput = document.createElement('input');
             typeInput.type = 'hidden';
             typeInput.name = 'notif_type';
             typeInput.value = type;
-            
+
             const messageInput = document.createElement('input');
             messageInput.type = 'hidden';
             messageInput.name = 'message';
             messageInput.value = message;
-            
+
             form.appendChild(fromInput);
             form.appendChild(typeInput);
             form.appendChild(messageInput);
@@ -204,7 +212,7 @@
             document.querySelectorAll('.post').forEach(function(postDiv) {
                 const editBtn = postDiv.querySelector('.edit-btn');
                 const deleteBtn = postDiv.querySelector('.delete-btn');
-                
+
                 if (editBtn) {
                     editBtn.addEventListener('click', function() {
                         const postId = postDiv.getAttribute('data-post-id');
@@ -214,7 +222,7 @@
                         document.getElementById('editForm').action = '/edit-post/' + postId;
                     });
                 }
-                
+
                 if (deleteBtn) {
                     deleteBtn.addEventListener('click', function() {
                         const postId = postDiv.getAttribute('data-post-id');
